@@ -67,7 +67,6 @@ class TagCompl:
     def tab_pressed(self, widget, event):
         """Main handler"""
         if event.keyval == 65289: #TAB
-
             self.start = self.buf.get_iter_at_mark(self.buf.get_insert())
             self.stop = get_tag_start_pos(self.start)
             # if not tag (not starts with @)
@@ -75,6 +74,12 @@ class TagCompl:
             # make the suggestions list 
             written = self.buf.get_text(self.stop, self.start)
             tags_names = self.get_names_of_all_tags()
+            # try to remove already written part of tag from tags list
+            # because gtg use live update of your writing
+            try:
+                tags_names.remove(written)
+            except TypeError:
+                pass
             suggestions = fuzzy_match(written, tags_names)
             # if only one or no suggestions
             if len(suggestions) == 1:
@@ -105,15 +110,13 @@ def get_tag_start_pos(cur_pos):
 
 def fuzzy_match(token, all_tokens):
     """At first we filter tokens throw simple filter (a in b) to define if there are
-    single match or all_list match
-    we use [1:] to remove fst elem of suggestion list, because gtg update tags
-    list on you type it
+    single match or match all tags (tab pressed after @)
     """
     simple_filter = lambda el: lambda lst: el in lst
-    simple_suggestions = filter(simple_filter(token), all_tokens)[1:]
+    simple_suggestions = filter(simple_filter(token), all_tokens)
     if len(simple_suggestions) == 1:
         return simple_suggestions
     else:
-        fuzzy_suggestions = difflib.get_close_matches(token, all_tokens)[1:]
+        fuzzy_suggestions = difflib.get_close_matches(token, all_tokens)
         suggestions = set(simple_suggestions).union(set(fuzzy_suggestions))
         return suggestions
