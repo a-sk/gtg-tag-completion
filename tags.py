@@ -72,13 +72,13 @@ class TagCompl:
             # if not tag (not starts with @)
             if not self.stop: return
             # make the suggestions list 
-            written = self.buf.get_text(self.stop, self.start)
+            written = self.buf.get_text(self.stop, self.start).lower()
             tags_names = self.get_names_of_all_tags()
             # try to remove already written part of tag from tags list
             # because gtg use live update of your writing
             try:
                 tags_names.remove(written)
-            except TypeError:
+            except ValueError:
                 pass
             suggestions = fuzzy_match(written, tags_names)
             # if only one or no suggestions
@@ -112,11 +112,10 @@ def fuzzy_match(token, all_tokens):
     """At first we filter tokens throw simple filter (a in b) to define if there are
     single match or match all tags (tab pressed after @)
     """
-    simple_filter = lambda el: lambda lst: el in lst
-    simple_suggestions = filter(simple_filter(token), all_tokens)
-    if len(simple_suggestions) == 1:
-        return simple_suggestions
-    else:
-        fuzzy_suggestions = difflib.get_close_matches(token, all_tokens)
-        suggestions = set(simple_suggestions).union(set(fuzzy_suggestions))
-        return suggestions
+    a_in_b_suggestions = filter(lambda lst: token in lst, all_tokens)
+    # if only one candidate return it
+    if len(a_in_b_suggestions) == 1: return a_in_b_suggestions
+
+    fuzzy_suggestions = difflib.get_close_matches(token, all_tokens)
+    suggestions = set(a_in_b_suggestions) | set(fuzzy_suggestions)
+    return list(suggestions)
