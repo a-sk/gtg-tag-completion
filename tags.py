@@ -17,6 +17,7 @@ replace fuzzy_match with your's
 #[done]if only one - insert
 #[done]generate list of all tags in place
 
+
 class TagCompl:
     def activate(self, plugin_api):
         self.api = plugin_api
@@ -28,7 +29,7 @@ class TagCompl:
 
     def deactivate(self, plugin_api):
         print "the plugin was deactivated"
-    
+
     def get_names_of_all_tags(self):
         tags = self.api.get_all_tags()
         return [tag.get_attribute('name') for tag in tags]
@@ -63,15 +64,16 @@ class TagCompl:
         x = textview_coord.x + win_x + 5
         y = textview_coord.y + win_y
         return x, y, False
-    
+
     def tab_pressed(self, widget, event):
         """Main handler"""
-        if event.keyval == 65289: #TAB
+        if event.keyval == gtk.keysyms.Tab:
             self.start = self.buf.get_iter_at_mark(self.buf.get_insert())
             self.stop = get_tag_start_pos(self.start)
             # if not tag (not starts with @)
-            if not self.stop: return
-            # make the suggestions list 
+            if not self.stop:
+                return
+            # make the suggestions list
             written = self.buf.get_text(self.stop, self.start).lower()
             tags_names = self.get_names_of_all_tags()
             # try to remove already written part of tag from tags list
@@ -91,7 +93,7 @@ class TagCompl:
             popup_menu = self.make_compl_menu(suggestions)
             popup_menu.popup(None, None, self.place_at_cursor, 0, 0)
             return True
-        
+
 
 def get_tag_start_pos(cur_pos):
     """Return position where tag begins
@@ -114,8 +116,8 @@ def fuzzy_match(token, all_tokens):
     """
     a_in_b_suggestions = filter(lambda lst: token in lst, all_tokens)
     # if only one candidate return it
-    if len(a_in_b_suggestions) == 1: return a_in_b_suggestions
-
+    if len(a_in_b_suggestions) == 1:
+        return a_in_b_suggestions
     fuzzy_suggestions = difflib.get_close_matches(token, all_tokens)
     suggestions = set(a_in_b_suggestions) | set(fuzzy_suggestions)
     return list(suggestions)
