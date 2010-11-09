@@ -21,6 +21,7 @@ replace fuzzy_match with your's
 class TagCompl:
     def activate(self, plugin_api):
         self.api = plugin_api
+        self.req = self.api.get_requester()
 
     def onTaskOpened(self, plugin_api):
             self.taskview = plugin_api.textview
@@ -31,7 +32,8 @@ class TagCompl:
         print "the plugin was deactivated"
 
     def get_names_of_all_tags(self):
-        tags = self.api.get_all_tags()
+        #tags = self.api.get_all_tags()
+        tags = self.req.get_used_tags()
         return [tag.get_attribute('name') for tag in tags]
 
     def complete(self, completion):
